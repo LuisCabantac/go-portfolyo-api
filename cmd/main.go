@@ -1,11 +1,21 @@
 package main
 
 import (
+	"log"
 	"log/slog"
 	"os"
+
+	"github.com/clerk/clerk-sdk-go/v2"
+	convex "github.com/inselfcontroll/convex-go"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load(".env.local")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -15,6 +25,11 @@ func main() {
 	if env == "" {
 		env = "development"
 	}
+
+	client := convex.NewClient(os.Getenv("CONVEX_URL"), nil)
+	client.SetAdminAuth(os.Getenv("CONVEX_DEPLOY_KEY"))
+
+	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
 	cfg := config{
 		addr: ":" + port,
@@ -27,6 +42,7 @@ func main() {
 	api := application{
 		config: cfg,
 		logger: logger,
+		client: client,
 	}
 
 	if err := api.run(api.mount()); err != nil {
