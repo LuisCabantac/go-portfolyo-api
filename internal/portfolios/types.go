@@ -90,4 +90,9 @@ var (
 		Message:    "Failed to save screenshot metadata.",
 		Code:       "screenshot_save_failed",
 		StatusCode: http.StatusInternalServerError}
+	ErrParsingUploadResponse = &apperrors.AppError{
+		Message:    "Failed to parse upload service response.",
+		Code:       "invalid_upload_response",
+		StatusCode: http.StatusInternalServerError,
+	}
 )
