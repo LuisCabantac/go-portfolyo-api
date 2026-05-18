@@ -44,6 +44,6 @@ func Read(r *http.Request, data any) error {
 	return decoder.Decode(data)
 }
 
-func ReadJSON(w *http.Response, data any) error {
-	return json.NewDecoder(w.Body).Decode(data)
+func ReadJSON(resp *http.Response, data any) error {
+	return json.NewDecoder(resp.Body).Decode(data)
 }
