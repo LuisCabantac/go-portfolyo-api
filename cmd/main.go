@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -39,10 +40,13 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
+	httpClient := &http.Client{}
+
 	api := application{
-		config: cfg,
-		logger: logger,
-		client: client,
+		config:     cfg,
+		logger:     logger,
+		client:     client,
+		httpClient: httpClient,
 	}
 
 	if err := api.run(api.mount()); err != nil {

@@ -3,7 +3,6 @@ package portfolios
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
@@ -14,12 +13,14 @@ import (
 )
 
 type svc struct {
-	client *codebase.Client
+	client     *codebase.Client
+	httpClient *http.Client
 }
 
-func NewService(client *codebase.Client) *svc {
+func NewService(client *codebase.Client, httpClient *http.Client) *svc {
 	return &svc{
-		client: client,
+		client:     client,
+		httpClient: httpClient,
 	}
 }
 
@@ -28,67 +29,69 @@ func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string,
 		"portfolioId": portfolioID,
 	})
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrMissingIDParam, err)
+		return StorageResponse{}, ErrMissingIDParam
 	}
 
 	usr, err := convex.Query[User](ctx, s.client, "queries/users:getUserByClerkId", map[string]any{
 		"clerkId": authUser.ID,
 	})
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrUserNotFound, err)
+		return StorageResponse{}, ErrUserNotFound
 	}
 
 	if usr.Portfolio != portfolio.ID {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrUnauthorizedPortfolioAccess, err)
+		return StorageResponse{}, ErrUnauthorizedPortfolioAccess
 	}
 
 	buf, err := screenshot.Screenshot(portfolio.URL)
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrScreenshotCapture, err)
+		return StorageResponse{}, ErrScreenshotCapture
 	}
 
 	_, err = convex.Mutation[Portfolio](ctx, s.client, "mutations/portfolios:deletePortfolioScreenshot", map[string]any{
 		"portfolioId": portfolioID,
 	})
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrRemoveExistingScreenshot, err)
+		return StorageResponse{}, ErrRemoveExistingScreenshot
 	}
 
 	uploadUrl, err := convex.Mutation[any](ctx, s.client, "mutations/portfolios:generateUploadUrl", map[string]any{})
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrGenerateUploadURL, err)
+		return StorageResponse{}, ErrGenerateUploadURL
 	}
 
 	blobReader := bytes.NewReader(buf)
 
 	url, ok := uploadUrl.(string)
 	if !ok {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrInvalidUploadURL, err)
+		return StorageResponse{}, ErrInvalidUploadURL
 	}
 
 	req, err := http.NewRequest("POST", url, blobReader)
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrUploadRequest, err)
+		return StorageResponse{}, ErrUploadRequest
 	}
 	req.Header.Set("Content-Type", "image/png")
-	client := &http.Client{}
 
-	resp, err := client.Do(req)
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrScreenshotUpload, err)
+		return StorageResponse{}, ErrScreenshotUpload
 	}
 	defer resp.Body.Close()
 
 	var storageId UploadUrlResponse
 
 	err = json.ReadJSON(resp, &storageId)
+	if err != nil {
+		return StorageResponse{}, ErrParsingUploadResponse
+	}
 
 	_, err = convex.Mutation[any](ctx, s.client, "mutations/portfolios:savePortfolioScreenshot", map[string]any{
 		"portfolioId": portfolioID,
 		"storageId":   storageId.StorageId,
 	})
 	if err != nil {
-		return StorageResponse{}, fmt.Errorf("%w: %v", ErrSaveScreenshotMetadata, err)
+		return StorageResponse{}, ErrSaveScreenshotMetadata
 	}
 
 	return StorageResponse{

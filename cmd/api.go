@@ -15,9 +15,10 @@ import (
 )
 
 type application struct {
-	config config
-	logger *slog.Logger
-	client *codebase.Client
+	config     config
+	logger     *slog.Logger
+	client     *codebase.Client
+	httpClient *http.Client
 }
 
 type config struct {
@@ -41,7 +42,7 @@ func (app *application) mount() http.Handler {
 	healthHandler := health.NewHandler(healthService)
 	r.Get("/", healthHandler.HealthCheck)
 
-	portfolioService := portfolios.NewService(app.client)
+	portfolioService := portfolios.NewService(app.client, app.httpClient)
 	portfolioHandler := portfolios.NewHandler(portfolioService)
 	r.With(clerkhttp.WithHeaderAuthorization()).Post(fmt.Sprintf("/%s/api/portfolios/{portfolioID}/screenshot", apiVersion), portfolioHandler.CreatePortfolioScreenshot)
 
