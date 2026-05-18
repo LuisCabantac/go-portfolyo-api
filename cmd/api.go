@@ -1,18 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
+	"github.com/LuisCabantac/portfolyo-go-api/internal/health"
+	"github.com/LuisCabantac/portfolyo-go-api/internal/portfolios"
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/inselfcontroll/convex-go/src/codebase"
 )
 
 type application struct {
 	config config
 	logger *slog.Logger
+	client *codebase.Client
 }
 
 type config struct {
@@ -20,9 +25,7 @@ type config struct {
 	env  string
 }
 
-const apiName = "Portfolyo API"
-
-const version = "1.0.0"
+const apiVersion = "v1"
 
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
@@ -34,21 +37,13 @@ func (app *application) mount() http.Handler {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		if err := json.Write(w, http.StatusOK, struct {
-			Message     string
-			Version     string
-			Status      string
-			Environment string
-		}{
-			Message:     apiName,
-			Version:     version,
-			Status:      "running",
-			Environment: app.config.env,
-		}); err != nil {
-			app.logger.Error("the server encountered a problem and could not process your request", "error", err)
-		}
-	})
+	healthService := health.NewService(app.config.env, app.logger)
+	healthHandler := health.NewHandler(healthService)
+	r.Get("/", healthHandler.HealthCheck)
+
+	portfolioService := portfolios.NewService(app.client)
+	portfolioHandler := portfolios.NewHandler(portfolioService)
+	r.With(clerkhttp.WithHeaderAuthorization()).Post(fmt.Sprintf("/%s/api/portfolios/{portfolioID}/screenshot", apiVersion), portfolioHandler.CreatePortfolioScreenshot)
 
 	return r
 }
