@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User) (StorageResponse, error)
+	CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (StorageResponse, error)
 }
 
 type StorageResponse struct {
@@ -35,6 +35,10 @@ type User struct {
 
 type UploadUrlResponse struct {
 	StorageId string `json:"storageId"`
+}
+
+type PortfolioRequest struct {
+	Theme *string `json:"theme,omitempty"`
 }
 
 var (

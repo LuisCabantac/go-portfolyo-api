@@ -1,6 +1,7 @@
 package portfolios
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
@@ -38,7 +39,17 @@ func (h *handler) CreatePortfolioScreenshot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	resp, err := h.service.CreatePortfolioScreenshot(r.Context(), portfolioID, usr)
+	theme := "light"
+	portfolioTheme := PortfolioRequest{
+		Theme: &theme,
+	}
+
+	err = json.Read(r, &portfolioTheme)
+	if err != nil && err != io.EOF {
+		return
+	}
+
+	resp, err := h.service.CreatePortfolioScreenshot(r.Context(), portfolioID, usr, *portfolioTheme.Theme)
 	if err != nil {
 		_ = json.WriteErrorResponse(w, err)
 		return

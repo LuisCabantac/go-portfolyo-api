@@ -24,7 +24,7 @@ func NewService(client *codebase.Client, httpClient *http.Client) *svc {
 	}
 }
 
-func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User) (StorageResponse, error) {
+func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (StorageResponse, error) {
 	portfolio, err := convex.Query[Portfolio](ctx, s.client, "queries/portfolios:getPortfolioById", map[string]any{
 		"portfolioId": portfolioID,
 	})
@@ -43,7 +43,7 @@ func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string,
 		return StorageResponse{}, ErrUnauthorizedPortfolioAccess
 	}
 
-	buf, err := screenshot.Screenshot(portfolio.URL)
+	buf, err := screenshot.Screenshot(portfolio.URL, theme)
 	if err != nil {
 		return StorageResponse{}, ErrScreenshotCapture
 	}
