@@ -52,7 +52,7 @@ CLERK_SECRET_KEY=<your_clerk_secret_key>
 
 Start the development server:
 ```bash
-go run ./cmd/main.go
+go run ./cmd
 ```
 
 The API will be available at `http://localhost:8080`
