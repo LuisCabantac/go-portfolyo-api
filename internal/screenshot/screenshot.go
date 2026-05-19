@@ -15,7 +15,11 @@ func Screenshot(url string, theme ...string) ([]byte, error) {
 		return []byte{}, ErrMissingPortfolioURL
 	}
 
-	page := rod.New().MustConnect().MustPage(url).MustSetViewport(1280, 720, 1, false)
+	browser := rod.New().MustConnect()
+	defer browser.Close()
+
+	page := browser.MustPage(url).MustSetViewport(1280, 720, 1, false)
+	defer page.Close()
 
 	err := proto.EmulationSetEmulatedMedia{
 		Features: []*proto.EmulationMediaFeature{
@@ -27,7 +31,10 @@ func Screenshot(url string, theme ...string) ([]byte, error) {
 		return []byte{}, ErrScreenshotCapture
 	}
 
-	buf := page.MustWaitStable().MustScreenshotFullPage("")
+	page.MustNavigate(url)
+
+	page.MustWaitStable()
+	buf := page.MustScreenshotFullPage("")
 
 	if len(buf) == 0 {
 		return []byte{}, ErrScreenshotCapture
