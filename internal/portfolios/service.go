@@ -24,58 +24,58 @@ func NewService(client *codebase.Client, httpClient *http.Client) *svc {
 	}
 }
 
-func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (StorageResponse, error) {
-	portfolio, err := convex.Query[Portfolio](ctx, s.client, "queries/portfolios:getPortfolioById", map[string]any{
+func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (*StorageResponse, error) {
+	portfolio, err := convex.Query[*Portfolio](ctx, s.client, "queries/portfolios:getPortfolioById", map[string]any{
 		"portfolioId": portfolioID,
 	})
 	if err != nil {
-		return StorageResponse{}, ErrMissingIDParam
+		return &StorageResponse{}, ErrMissingIDParam
 	}
 
-	usr, err := convex.Query[User](ctx, s.client, "queries/users:getUserByClerkId", map[string]any{
+	usr, err := convex.Query[*User](ctx, s.client, "queries/users:getUserByClerkId", map[string]any{
 		"clerkId": authUser.ID,
 	})
 	if err != nil {
-		return StorageResponse{}, ErrUserNotFound
+		return &StorageResponse{}, ErrUserNotFound
 	}
 
 	if usr.Portfolio != portfolio.ID {
-		return StorageResponse{}, ErrUnauthorizedPortfolioAccess
+		return &StorageResponse{}, ErrUnauthorizedPortfolioAccess
 	}
 
 	buf, err := screenshot.Screenshot(portfolio.URL, theme)
 	if err != nil {
-		return StorageResponse{}, ErrScreenshotCapture
+		return &StorageResponse{}, ErrScreenshotCapture
 	}
 
 	_, err = convex.Mutation[Portfolio](ctx, s.client, "mutations/portfolios:deletePortfolioScreenshot", map[string]any{
 		"portfolioId": portfolioID,
 	})
 	if err != nil {
-		return StorageResponse{}, ErrRemoveExistingScreenshot
+		return &StorageResponse{}, ErrRemoveExistingScreenshot
 	}
 
 	uploadUrl, err := convex.Mutation[any](ctx, s.client, "mutations/portfolios:generateUploadUrl", map[string]any{})
 	if err != nil {
-		return StorageResponse{}, ErrGenerateUploadURL
+		return &StorageResponse{}, ErrGenerateUploadURL
 	}
 
 	blobReader := bytes.NewReader(buf)
 
 	url, ok := uploadUrl.(string)
 	if !ok {
-		return StorageResponse{}, ErrInvalidUploadURL
+		return &StorageResponse{}, ErrInvalidUploadURL
 	}
 
 	req, err := http.NewRequest("POST", url, blobReader)
 	if err != nil {
-		return StorageResponse{}, ErrUploadRequest
+		return &StorageResponse{}, ErrUploadRequest
 	}
 	req.Header.Set("Content-Type", "image/png")
 
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return StorageResponse{}, ErrScreenshotUpload
+		return &StorageResponse{}, ErrScreenshotUpload
 	}
 	defer resp.Body.Close()
 
@@ -83,7 +83,7 @@ func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string,
 
 	err = json.ReadJSON(resp, &storageId)
 	if err != nil {
-		return StorageResponse{}, ErrParsingUploadResponse
+		return &StorageResponse{}, ErrParsingUploadResponse
 	}
 
 	_, err = convex.Mutation[any](ctx, s.client, "mutations/portfolios:savePortfolioScreenshot", map[string]any{
@@ -91,10 +91,10 @@ func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string,
 		"storageId":   storageId.StorageId,
 	})
 	if err != nil {
-		return StorageResponse{}, ErrSaveScreenshotMetadata
+		return &StorageResponse{}, ErrSaveScreenshotMetadata
 	}
 
-	return StorageResponse{
+	return &StorageResponse{
 		Message:    "Portfolio screenshot taken and stored successfully!",
 		StatusCode: http.StatusCreated,
 		StorageId:  &storageId.StorageId,

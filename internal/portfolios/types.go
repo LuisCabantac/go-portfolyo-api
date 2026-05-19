@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (StorageResponse, error)
+	CreatePortfolioScreenshot(ctx context.Context, portfolioID string, authUser *clerk.User, theme string) (*StorageResponse, error)
 }
 
 type StorageResponse struct {
