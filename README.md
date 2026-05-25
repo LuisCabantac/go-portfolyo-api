@@ -39,13 +39,20 @@ cd go-portfolyo-api
 go mod download
 ```
 
-3. Set up environment variables in a `.env.local` file:
+3. Set up environment variables in a `.env` file:
 ```env
 PORT=8080
 APP_ENV=development
-CONVEX_URL=<your_convex_url>
-CONVEX_DEPLOY_KEY=<your_convex_deploy_key>
+
+# Clerk Authentication
 CLERK_SECRET_KEY=<your_clerk_secret_key>
+CLERK_PUBLISHABLE_KEY=<your_clerk_publishable_key>
+
+# Convex Cloud Configuration
+CONVEX_DEPLOYMENT=<your_convex_deployment_id>
+CONVEX_URL=https://<your_project>.convex.cloud
+CONVEX_SITE_URL=https://<your_project>.convex.site
+CONVEX_DEPLOY_KEY=<your_convex_deploy_key>
 ```
 
 ### Development
@@ -56,6 +63,43 @@ go run ./cmd
 ```
 
 The API will be available at `http://localhost:8080`
+
+### Docker
+
+The project includes Docker configuration for containerized deployment.
+
+#### Build and Run with Docker
+
+1. Build the Docker image:
+```bash
+docker build -t portfolyo-api .
+```
+
+2. Run the container:
+```bash
+docker run -p 8080:8080 --env-file .env portfolyo-api
+```
+
+#### Docker Compose
+
+For easier setup with volume management, use Docker Compose:
+
+```bash
+docker compose up
+```
+
+This will:
+- Build the Docker image from the Dockerfile
+- Start the service on port 8080
+- Load environment variables from `.env`
+- Mount a volume for Rod browser cache to persist across container restarts
+
+#### Docker Configuration Details
+
+- **Base Image**: `debian:bookworm-slim` (optimized for production)
+- **Build Stage**: Uses `golang:1.26.3-bookworm` for compilation
+- **Dependencies**: Includes browser dependencies required by Rod for screenshot generation
+- **Volume**: `rod-browser-cache` persists browser cache between runs, improving performance
 
 ### Building
 
