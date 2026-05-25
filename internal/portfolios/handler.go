@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/json"
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/user"
 	"github.com/go-chi/chi/v5"

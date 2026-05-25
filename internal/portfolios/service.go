@@ -5,8 +5,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
-	"github.com/LuisCabantac/portfolyo-go-api/internal/screenshot"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/json"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/screenshot"
 	"github.com/clerk/clerk-sdk-go/v2"
 	convex "github.com/inselfcontroll/convex-go"
 	"github.com/inselfcontroll/convex-go/src/codebase"

@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/apperrors"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/apperrors"
 )
 
 func Write[T comparable](w http.ResponseWriter, status int, data T) error {

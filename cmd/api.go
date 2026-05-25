@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/health"
-	"github.com/LuisCabantac/portfolyo-go-api/internal/portfolios"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/health"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/portfolios"
 	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

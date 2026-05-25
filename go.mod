@@ -1,4 +1,4 @@
-module github.com/LuisCabantac/portfolyo-go-api
+module github.com/LuisCabantac/go-portfolyo-api
 
 go 1.26.3
 

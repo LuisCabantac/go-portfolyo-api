@@ -3,7 +3,7 @@ package screenshot
 import (
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/apperrors"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/apperrors"
 )
 
 var (

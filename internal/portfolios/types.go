@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/apperrors"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/apperrors"
 	"github.com/clerk/clerk-sdk-go/v2"
 )
 

@@ -3,7 +3,7 @@ package health
 import (
 	"net/http"
 
-	"github.com/LuisCabantac/portfolyo-go-api/internal/json"
+	"github.com/LuisCabantac/go-portfolyo-api/internal/json"
 )
 
 const apiName = "Portfolyo API"

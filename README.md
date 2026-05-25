@@ -30,8 +30,8 @@ Backend service for the [Portfolyo](https://portfolyo.luiscabantac.com) mobile a
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/LuisCabantac/portfolyo-go-api.git
-cd portfolyo-go-api
+git clone https://github.com/LuisCabantac/go-portfolyo-api.git
+cd go-portfolyo-api
 ```
 
 2. Install dependencies:
