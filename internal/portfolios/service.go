@@ -29,7 +29,7 @@ func (s *svc) CreatePortfolioScreenshot(ctx context.Context, portfolioID string,
 		"portfolioId": portfolioID,
 	})
 	if err != nil {
-		return &StorageResponse{}, ErrMissingIDParam
+		return &StorageResponse{}, ErrPortfolioNotFound
 	}
 
 	usr, err := convex.Query[*User](ctx, s.client, "queries/users:getUserByClerkId", map[string]any{
